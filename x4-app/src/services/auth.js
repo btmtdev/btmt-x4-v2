@@ -58,10 +58,6 @@ export const authService = {
     })
   },
 
-  getOnlineUsers() {
-    return request("/api/auth/online-users")
-  },
-
   heartbeat(deviceId) {
     const token = localStorage.getItem("token")
     return request("/api/auth/heartbeat", {

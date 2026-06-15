@@ -1,7 +1,7 @@
 {
   "name": "x4-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@microsoft/signalr": "10.0.0",
     "@tailwindcss/vite": "^4.3.0",
     "@tanstack/react-table": "8.20.6",
     "ag-grid-community": "35.3.1",

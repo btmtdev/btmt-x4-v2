@@ -4,8 +4,12 @@
     "MORNING": "Good morning 🌅",
     "AFTERNOON": "Good afternoon ☀️",
     "EVENING": "Good evening 🌙",
-    "SUBTITLE": "Welcome to the system"
+    "SUBTITLE": "Welcome to the system",
+    "RELEASE_HISTORY": "Release History",
+    "NO_RELEASES": "No release history yet"
   },
+  "VERSION_OUTDATED": "A new version ({{version}}) is available.",
+  "RELOAD": "Reload now",
   "SIGN_IN": "Sign In",
   "SIGNING_IN": "Signing In...",
   "SIGN_IN_DESC": "Enter your credentials to access the system",
@@ -324,15 +328,6 @@
     "PAGE_NOT_FOUND": "Page Not Found",
     "PAGE_NOT_FOUND_DESC": "The page you're looking for doesn't exist or has been moved.",
     "GO_BACK": "Go Back"
-  },
-  "ONLINE_USERS": {
-    "TITLE": "Online Users",
-    "CONNECTIONS": "connections",
-    "ONLINE": "online",
-    "ANONYMOUS": "Anonymous",
-    "NO_DATA": "No users online",
-    "HR": "hr",
-    "MIN": "min"
   },
   "AG_GRID": {
     "PAGE": "Page",

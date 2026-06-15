@@ -17,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AppSetting> AppSettings { get; set; }
     public DbSet<UserTicket> UserTickets { get; set; }
     public DbSet<UserTicketHistory> UserTicketHistories { get; set; }
+    public DbSet<AppReleaseHistory> AppReleaseHistories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
@@ -187,6 +188,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(x => x.Action).HasColumnName("action");
             e.Property(x => x.Comment).HasColumnName("comment");
             e.Property(x => x.IsDeleted).HasColumnName("is_deleted");
+        });
+
+        mb.Entity<AppReleaseHistory>(e =>
+        {
+            e.ToTable("app_release_history");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id");
+            e.Property(x => x.Version).HasColumnName("version");
+            e.Property(x => x.Title).HasColumnName("title");
+            e.Property(x => x.Description).HasColumnName("description");
+            e.Property(x => x.ReleasedAt).HasColumnName("released_at");
         });
     }
 }

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 import { Outlet } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import LangSwitcher from "@/components/lang-switcher"
-import { useOnlineCount } from "@/hooks/use-online-count"
 import loginBg from "@/assets/login-bg.png"
 import { version } from "../../package.json"
 
@@ -24,18 +23,6 @@ function Clock() {
   )
 }
 
-function OnlineCount() {
-  const count = useOnlineCount()
-  return (
-    <span className="text-xs text-muted-foreground/70 flex items-center gap-1.5">
-      <span className="relative flex size-1.5">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-        <span className="relative inline-flex rounded-full size-1.5 bg-emerald-500" />
-      </span>
-      {count}
-    </span>
-  )
-}
 
 export default function AuthLayout() {
   return (
@@ -57,7 +44,6 @@ export default function AuthLayout() {
       {/* Right form panel */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-12 bg-background relative">
         <div className="absolute top-4 right-4 flex items-center gap-3">
-          <OnlineCount />
           <LangSwitcher />
         </div>
         <div className="w-full max-w-sm">

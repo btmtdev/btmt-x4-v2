@@ -1,10 +1,11 @@
 import { useState, useEffect, createContext, useContext, useMemo, Fragment } from "react"
 import { Outlet, useNavigate, useLocation } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { Menu } from "lucide-react"
+import { Menu, RefreshCw } from "lucide-react"
 import * as icons from "lucide-react"
 import { adminService } from "@/services/admin"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useVersionCheck } from "@/hooks/use-version-check"
 import { cn } from "@/lib/utils"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Header } from "./header"
@@ -119,6 +120,8 @@ function LayoutInner({ menu, nameKey, toolbar }) {
   const { isMobile, isPanelOpen, isMobileOpen, mobileToggle } = useLayout()
   const location = useLocation()
   const [activeL1, setActiveL1] = useActiveL1()
+  const { t } = useTranslation()
+  const { outdated, latestVersion } = useVersionCheck()
 
   useEffect(() => {
     if (!menu.length) return
@@ -135,6 +138,14 @@ function LayoutInner({ menu, nameKey, toolbar }) {
   return (
     <>
       <Header menu={menu} nameKey={nameKey} />
+
+      {outdated && (
+        <div className="fixed bottom-0 inset-x-0 z-50 bg-yellow-300 border-t border-yellow-400 px-4 py-2 flex items-center justify-center gap-2 text-sm text-yellow-900">
+          <RefreshCw size={14} />
+          <span>{t("VERSION_OUTDATED", { version: latestVersion })}</span>
+          <button onClick={() => window.location.reload()} className="underline font-medium hover:text-yellow-950">{t("RELOAD")}</button>
+        </div>
+      )}
 
       <div className="flex grow pt-(--header-height)">
         {!isMobile && (
