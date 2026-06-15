@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { SlidePanel } from "@/components/slide-panel"
+import { ConfirmDialog } from "@/components/confirm-dialog"
 import { formatInvoiceNumber } from "@/services/shipping"
 import InvoiceEditPage from "./invoice-edit"
 
@@ -28,6 +29,7 @@ export default function InvoicesPage() {
   const [panel, setPanel] = useState(null)
   const [invoice, setInvoice] = useState(null)
   const [panelWidth, setPanelWidth] = useState(80)
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   useEffect(() => { load() }, [filterMonth])
 
@@ -52,6 +54,13 @@ export default function InvoicesPage() {
     setPanel("detail")
   }
 
+  async function handleDelete() {
+    if (!confirmDelete) return
+    await fetch(`${import.meta.env.VITE_SHIPPING_API_URL ?? "http://localhost:4001"}/api/invoices/${encodeURIComponent(confirmDelete)}`, { method: "DELETE" })
+    setConfirmDelete(null)
+    load()
+  }
+
   const colDefs = useMemo(() => [
     { field: "invoice_key", headerName: "INVOICE CODE", minWidth: 120, flex: 1, sort: "desc" },
     { headerName: "INVOICE NO", minWidth: 140, flex: 1.2, valueGetter: p => formatInvoiceNumber(p.data.invoice_key) },
@@ -60,6 +69,7 @@ export default function InvoicesPage() {
     { field: "etd", headerName: "ETD", minWidth: 100, flex: 0.8 },
     { field: "port_of_destination", headerName: "PORT", minWidth: 70, flex: 0.5 },
     { field: "edi_ship_to", headerName: "PORT NAME", minWidth: 150, flex: 2 },
+    { headerName: "", minWidth: 60, maxWidth: 60, cellRenderer: p => p.data.item_count === 0 ? <button className="text-red-500 hover:text-red-700 text-xs font-semibold" onClick={e => { e.stopPropagation(); setConfirmDelete(p.data.invoice_key) }}>Delete</button> : null, sortable: false, filter: false },
   ], [])
 
   const defaultColDef = useMemo(() => ({ sortable: true, filter: true, resizable: true, suppressHeaderMenuButton: true }), [])
@@ -97,6 +107,8 @@ export default function InvoicesPage() {
           <InvoiceEditPage invoiceKey={invoice.invoice_key} onClose={() => { setPanel(null); load() }} />
         </SlidePanel>
       )}
+
+      <ConfirmDialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)} onConfirm={handleDelete} title="Delete Invoice" message={`Delete empty invoice ${confirmDelete}?`} confirmLabel="Delete" cancelLabel="Cancel" />
     </div>
   )
 }

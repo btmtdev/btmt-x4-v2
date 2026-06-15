@@ -38,7 +38,10 @@ public class InvoicesController(ShippingDbContext db) : ControllerBase
             query = query.Where(x => x.Etd >= start && x.Etd <= end);
         }
         var invoices = await query.OrderByDescending(x => x.Etd).ToListAsync();
-        return Ok(ApiResponse.Success(invoices));
+        var invoiceKeys = invoices.Select(x => x.InvoiceKey).ToList();
+        var itemCounts = await db.InvoiceItems.Where(x => invoiceKeys.Contains(x.InvoiceKey)).GroupBy(x => x.InvoiceKey).Select(g => new { g.Key, Count = g.Count() }).ToDictionaryAsync(x => x.Key, x => x.Count);
+        var list = invoices.Select(x => new { x.InvoiceKey, x.InvoiceDate, x.CustomerKey, x.Etd, x.Eta, x.PortOfDestination, x.EdiShipTo, x.BookingNo, x.Status, x.CountryCode, item_count = itemCounts.GetValueOrDefault(x.InvoiceKey, 0) });
+        return Ok(ApiResponse.Success(list));
     }
 
     // GET api/invoices/next-number?etd=2026-06-14 — calculates next number (no reservation)
@@ -504,6 +507,18 @@ public class InvoicesController(ShippingDbContext db) : ControllerBase
         }
 
         return Ok(ApiResponse.Success(new { packing = resultPacking, packing_items = resultPackItems, containers_generated = containers.Count }));
+    }
+
+    [HttpDelete("{invoiceKey}")]
+    public async Task<IActionResult> Delete(string invoiceKey)
+    {
+        var invoice = await db.Invoices.FindAsync(invoiceKey);
+        if (invoice == null) return NotFound();
+        var hasItems = await db.InvoiceItems.AnyAsync(x => x.InvoiceKey == invoiceKey);
+        if (hasItems) return BadRequest(ApiResponse.Error("HAS_ITEMS", "Cannot delete invoice with items"));
+        db.Invoices.Remove(invoice);
+        await db.SaveChangesAsync();
+        return Ok(ApiResponse.Success("OK"));
     }
 
     // PUT api/invoices/{invoiceKey}/packing — manual save packing (for manual edits)
