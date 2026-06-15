@@ -12,11 +12,12 @@ import { authRoutes } from "./routing-auth"
 import { adminRoutes } from "./routing-admin"
 import { masterRoutes } from "./routing-master"
 import { shippingRoutes } from "./routing-shipping"
+import { warehouseRoutes } from "./routing-warehouse"
 import { generalRoutes } from "./routing-general"
 import { stationRoutes } from "./routing-station"
 import { publicRoutes } from "./routing-public"
 
-const desktopRoutes = [...generalRoutes, ...adminRoutes, ...masterRoutes, ...shippingRoutes]
+const desktopRoutes = [...generalRoutes, ...adminRoutes, ...masterRoutes, ...shippingRoutes, ...warehouseRoutes]
 
 export default function AppRoutingSetup() {
   return (
