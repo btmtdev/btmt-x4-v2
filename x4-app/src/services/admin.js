@@ -50,7 +50,6 @@ export const adminService = {
   setUserRoles: (userId, roleIds) => request(`/api/users/${userId}/roles`, { method: "POST", body: JSON.stringify({ role_keys: roleIds }) }),
   setUserOverrides: (userId, overrides) => request(`/api/users/${userId}/overrides`, { method: "POST", body: JSON.stringify({ overrides: overrides.map(o => ({ perm_key: o.permissionId, type: o.overrideType })) }) }),
   getEffectivePermissions: (userId) => request(`/api/users/${userId}/permissions`),
-  getOnlineSessions: () => request("/api/auth/online-sessions"),
   getUserSettings: (userId) => request(`/api/settings/user/${userId}`),
   setUserSettings: (userId, settings) => request(`/api/settings/user/${userId}`, { method: "PUT", body: JSON.stringify(settings) }),
 }
