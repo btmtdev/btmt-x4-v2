@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set environment variables
-        shell: pwsh
+        shell: powershell
         run: |
           if ("${{ github.event.inputs.environment }}" -eq "production" -or "${{ github.ref }}" -eq "refs/heads/main") {
             echo "ENV=Production" >> $env:GITHUB_ENV
@@ -46,14 +46,14 @@ jobs:
           }
 
       - name: Publish APIs
-        shell: pwsh
+        shell: powershell
         run: |
           dotnet publish x4-api-core/x4-api-core.csproj -c Release -o "${{ runner.temp }}/x4-api-core" /p:EnvironmentName=${{ env.ENV }}
           dotnet publish x4-api-shipping/x4-api-shipping.csproj -c Release -o "${{ runner.temp }}/x4-api-shipping" /p:EnvironmentName=${{ env.ENV }}
           dotnet publish x4-api-warehouse/x4-api-warehouse.csproj -c Release -o "${{ runner.temp }}/x4-api-warehouse" /p:EnvironmentName=${{ env.ENV }}
 
       - name: Stop IIS sites
-        shell: pwsh
+        shell: powershell
         run: |
           Import-Module WebAdministration
           @("${{ env.CORE_SITE }}", "${{ env.SHIPPING_SITE }}", "${{ env.WAREHOUSE_SITE }}") | ForEach-Object {
@@ -63,14 +63,14 @@ jobs:
           Start-Sleep -Seconds 3
 
       - name: Deploy
-        shell: pwsh
+        shell: powershell
         run: |
           Copy-Item -Path "${{ runner.temp }}/x4-api-core/*" -Destination "${{ env.CORE_PATH }}" -Recurse -Force
           Copy-Item -Path "${{ runner.temp }}/x4-api-shipping/*" -Destination "${{ env.SHIPPING_PATH }}" -Recurse -Force
           Copy-Item -Path "${{ runner.temp }}/x4-api-warehouse/*" -Destination "${{ env.WAREHOUSE_PATH }}" -Recurse -Force
 
       - name: Start IIS sites
-        shell: pwsh
+        shell: powershell
         run: |
           Import-Module WebAdministration
           @("${{ env.CORE_SITE }}", "${{ env.SHIPPING_SITE }}", "${{ env.WAREHOUSE_SITE }}") | ForEach-Object {

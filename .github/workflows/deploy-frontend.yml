@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set environment variables
-        shell: pwsh
+        shell: powershell
         run: |
           if ("${{ github.event.inputs.environment }}" -eq "production" -or "${{ github.ref }}" -eq "refs/heads/main") {
             echo "ENV=production" >> $env:GITHUB_ENV
@@ -42,12 +42,12 @@ jobs:
           }
 
       - name: Install dependencies
-        shell: pwsh
+        shell: powershell
         working-directory: x4-app
         run: npm ci
 
       - name: Build
-        shell: pwsh
+        shell: powershell
         working-directory: x4-app
         run: npm run build
         env:
@@ -55,12 +55,12 @@ jobs:
           VITE_SHIPPING_API_URL: ${{ env.VITE_SHIPPING_API_URL }}
 
       - name: Deploy to IIS (intranet)
-        shell: pwsh
+        shell: powershell
         run: |
           Copy-Item -Path "x4-app/dist/*" -Destination "${{ env.IIS_PATH }}" -Recurse -Force
 
       - name: Deploy to Amplify (internet)
-        shell: pwsh
+        shell: powershell
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
