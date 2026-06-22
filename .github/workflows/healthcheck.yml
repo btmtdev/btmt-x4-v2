@@ -1,0 +1,44 @@
+name: Health Check
+
+on:
+  schedule:
+    - cron: "*/5 * * * 1-5" # Every 5 minutes, Mon-Fri
+  workflow_dispatch:
+
+jobs:
+  healthcheck:
+    runs-on: self-hosted
+    steps:
+      - name: Check all services
+        shell: pwsh
+        run: |
+          $endpoints = @(
+            @{ Name = "PRD - x4-api-core";     Url = "http://10.30.92.66:4000/health" }
+            @{ Name = "PRD - x4-api-shipping"; Url = "http://10.30.92.66:4001/health" }
+            @{ Name = "UAT - x4-api-core";     Url = "http://10.30.93.66:4000/health" }
+            @{ Name = "UAT - x4-api-shipping"; Url = "http://10.30.93.66:4001/health" }
+            @{ Name = "PRD - x4-app (Amplify)"; Url = "https://x4.btmt.co.th" }
+            @{ Name = "UAT - x4-app (Amplify)"; Url = "https://x4uat.btmt.co.th" }
+          )
+
+          $failed = @()
+          foreach ($ep in $endpoints) {
+            try {
+              $response = Invoke-WebRequest -Uri $ep.Url -TimeoutSec 10 -UseBasicParsing
+              if ($response.StatusCode -eq 200) {
+                Write-Host "✅ $($ep.Name) - OK" -ForegroundColor Green
+              } else {
+                Write-Host "❌ $($ep.Name) - Status $($response.StatusCode)" -ForegroundColor Red
+                $failed += $ep.Name
+              }
+            } catch {
+              Write-Host "❌ $($ep.Name) - $($_.Exception.Message)" -ForegroundColor Red
+              $failed += $ep.Name
+            }
+          }
+
+          if ($failed.Count -gt 0) {
+            Write-Host "`n⚠️ Failed services: $($failed -join ', ')"
+            exit 1
+          }
+          Write-Host "`n✅ All services healthy"

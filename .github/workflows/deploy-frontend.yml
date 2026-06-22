@@ -1,0 +1,69 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main, uat]
+    paths:
+      - "x4-app/**"
+      - ".github/workflows/deploy-frontend.yml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - uat
+          - production
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set environment variables
+        shell: pwsh
+        run: |
+          if ("${{ github.event.inputs.environment }}" -eq "production" -or "${{ github.ref }}" -eq "refs/heads/main") {
+            echo "ENV=production" >> $env:GITHUB_ENV
+            echo "AMPLIFY_BRANCH=main" >> $env:GITHUB_ENV
+            echo "IIS_PATH=D:\Web\x4-app" >> $env:GITHUB_ENV
+            echo "IIS_SITE=x4-app" >> $env:GITHUB_ENV
+            echo "VITE_API_URL=https://api.btmt.co.th/x4/core" >> $env:GITHUB_ENV
+            echo "VITE_SHIPPING_API_URL=https://api.btmt.co.th/x4/shipping" >> $env:GITHUB_ENV
+          } else {
+            echo "ENV=uat" >> $env:GITHUB_ENV
+            echo "AMPLIFY_BRANCH=uat" >> $env:GITHUB_ENV
+            echo "IIS_PATH=D:\Web\x4dev-app" >> $env:GITHUB_ENV
+            echo "IIS_SITE=x4dev-app" >> $env:GITHUB_ENV
+            echo "VITE_API_URL=https://api.btmt.co.th/x4-uat/core" >> $env:GITHUB_ENV
+            echo "VITE_SHIPPING_API_URL=https://api.btmt.co.th/x4-uat/shipping" >> $env:GITHUB_ENV
+          }
+
+      - name: Install dependencies
+        shell: pwsh
+        working-directory: x4-app
+        run: npm ci
+
+      - name: Build
+        shell: pwsh
+        working-directory: x4-app
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ env.VITE_API_URL }}
+          VITE_SHIPPING_API_URL: ${{ env.VITE_SHIPPING_API_URL }}
+
+      - name: Deploy to IIS (intranet)
+        shell: pwsh
+        run: |
+          Copy-Item -Path "x4-app/dist/*" -Destination "${{ env.IIS_PATH }}" -Recurse -Force
+
+      - name: Deploy to Amplify (internet)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "x4-app/dist/*" -DestinationPath "${{ runner.temp }}/deploy.zip" -Force
+          $deployment = aws amplify create-deployment --app-id d1l9ah1vkxp677 --branch-name ${{ env.AMPLIFY_BRANCH }} | ConvertFrom-Json
+          $uploadUrl = $deployment.zipUploadUrl
+          Invoke-RestMethod -Uri $uploadUrl -Method PUT -InFile "${{ runner.temp }}/deploy.zip" -ContentType "application/zip"
+          aws amplify start-deployment --app-id d1l9ah1vkxp677 --branch-name ${{ env.AMPLIFY_BRANCH }} --job-id $deployment.jobId

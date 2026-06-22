@@ -1,0 +1,39 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dll
+*.pdb
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Environment
+.env.local
+.env.*.local
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Build artifacts
+artifacts/
+publish/
+
+# Backup
+backup/
+
+# Temp
+*.tmp
+
+# Kiro session
+.kiro
