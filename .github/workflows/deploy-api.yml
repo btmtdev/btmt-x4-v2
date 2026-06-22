@@ -6,6 +6,7 @@ on:
     paths:
       - "x4-api-core/**"
       - "x4-api-shipping/**"
+      - "x4-api-warehouse/**"
       - ".github/workflows/deploy-api.yml"
   workflow_dispatch:
     inputs:
@@ -30,47 +31,49 @@ jobs:
             echo "ENV=Production" >> $env:GITHUB_ENV
             echo "CORE_PATH=D:\Web\x4-api-core" >> $env:GITHUB_ENV
             echo "SHIPPING_PATH=D:\Web\x4-api-shipping" >> $env:GITHUB_ENV
+            echo "WAREHOUSE_PATH=D:\Web\x4-api-warehouse" >> $env:GITHUB_ENV
             echo "CORE_SITE=x4-api-core" >> $env:GITHUB_ENV
             echo "SHIPPING_SITE=x4-api-shipping" >> $env:GITHUB_ENV
+            echo "WAREHOUSE_SITE=x4-api-warehouse" >> $env:GITHUB_ENV
           } else {
             echo "ENV=Uat" >> $env:GITHUB_ENV
             echo "CORE_PATH=D:\Web\x4dev-api-core" >> $env:GITHUB_ENV
             echo "SHIPPING_PATH=D:\Web\x4dev-api-shipping" >> $env:GITHUB_ENV
+            echo "WAREHOUSE_PATH=D:\Web\x4dev-api-warehouse" >> $env:GITHUB_ENV
             echo "CORE_SITE=x4dev-api-core" >> $env:GITHUB_ENV
             echo "SHIPPING_SITE=x4dev-api-shipping" >> $env:GITHUB_ENV
+            echo "WAREHOUSE_SITE=x4dev-api-warehouse" >> $env:GITHUB_ENV
           }
 
-      - name: Publish x4-api-core
+      - name: Publish APIs
         shell: pwsh
         run: |
           dotnet publish x4-api-core/x4-api-core.csproj -c Release -o "${{ runner.temp }}/x4-api-core" /p:EnvironmentName=${{ env.ENV }}
-
-      - name: Publish x4-api-shipping
-        shell: pwsh
-        run: |
           dotnet publish x4-api-shipping/x4-api-shipping.csproj -c Release -o "${{ runner.temp }}/x4-api-shipping" /p:EnvironmentName=${{ env.ENV }}
+          dotnet publish x4-api-warehouse/x4-api-warehouse.csproj -c Release -o "${{ runner.temp }}/x4-api-warehouse" /p:EnvironmentName=${{ env.ENV }}
 
       - name: Stop IIS sites
         shell: pwsh
         run: |
           Import-Module WebAdministration
-          Stop-WebSite -Name "${{ env.CORE_SITE }}" -ErrorAction SilentlyContinue
-          Stop-WebSite -Name "${{ env.SHIPPING_SITE }}" -ErrorAction SilentlyContinue
-          Start-Sleep -Seconds 2
+          @("${{ env.CORE_SITE }}", "${{ env.SHIPPING_SITE }}", "${{ env.WAREHOUSE_SITE }}") | ForEach-Object {
+            Stop-WebAppPool -Name $_ -ErrorAction SilentlyContinue
+            Stop-WebSite -Name $_ -ErrorAction SilentlyContinue
+          }
+          Start-Sleep -Seconds 3
 
-      - name: Deploy x4-api-core
+      - name: Deploy
         shell: pwsh
         run: |
           Copy-Item -Path "${{ runner.temp }}/x4-api-core/*" -Destination "${{ env.CORE_PATH }}" -Recurse -Force
-
-      - name: Deploy x4-api-shipping
-        shell: pwsh
-        run: |
           Copy-Item -Path "${{ runner.temp }}/x4-api-shipping/*" -Destination "${{ env.SHIPPING_PATH }}" -Recurse -Force
+          Copy-Item -Path "${{ runner.temp }}/x4-api-warehouse/*" -Destination "${{ env.WAREHOUSE_PATH }}" -Recurse -Force
 
       - name: Start IIS sites
         shell: pwsh
         run: |
           Import-Module WebAdministration
-          Start-WebSite -Name "${{ env.CORE_SITE }}"
-          Start-WebSite -Name "${{ env.SHIPPING_SITE }}"
+          @("${{ env.CORE_SITE }}", "${{ env.SHIPPING_SITE }}", "${{ env.WAREHOUSE_SITE }}") | ForEach-Object {
+            Start-WebAppPool -Name $_
+            Start-WebSite -Name $_
+          }

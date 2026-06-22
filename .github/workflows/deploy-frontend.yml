@@ -61,9 +61,12 @@ jobs:
 
       - name: Deploy to Amplify (internet)
         shell: pwsh
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-southeast-1
         run: |
           Compress-Archive -Path "x4-app/dist/*" -DestinationPath "${{ runner.temp }}/deploy.zip" -Force
           $deployment = aws amplify create-deployment --app-id d1l9ah1vkxp677 --branch-name ${{ env.AMPLIFY_BRANCH }} | ConvertFrom-Json
-          $uploadUrl = $deployment.zipUploadUrl
-          Invoke-RestMethod -Uri $uploadUrl -Method PUT -InFile "${{ runner.temp }}/deploy.zip" -ContentType "application/zip"
+          Invoke-RestMethod -Uri $deployment.zipUploadUrl -Method PUT -InFile "${{ runner.temp }}/deploy.zip" -ContentType "application/zip"
           aws amplify start-deployment --app-id d1l9ah1vkxp677 --branch-name ${{ env.AMPLIFY_BRANCH }} --job-id $deployment.jobId
