@@ -1,16 +1,40 @@
+using System.Data.Odbc;
 using Microsoft.AspNetCore.Mvc;
-using x4_api_warehouse.Services;
+using x4_api_warehouse.Data;
+using x4_api_warehouse.Models;
 
 namespace x4_api_warehouse.Controllers;
 
+[Route("api/stock")]
 [ApiController]
-[Route("api/[controller]")]
-public class StockController(OdbcService db) : ControllerBase
+public class StockController : ControllerBase
 {
-    [HttpGet("test")]
-    public async Task<IActionResult> TestConnection()
+    private readonly WarehouseDb _db;
+
+    public StockController(WarehouseDb db) => _db = db;
+
+    [HttpGet]
+    public async Task<IActionResult> GetStock()
     {
-        var result = await db.QueryAsync("SELECT 1 AS ok");
-        return Ok(new { status = "connected", data = result });
+        var items = new List<Dictionary<string, object?>>();
+
+        await using var conn = _db.CreateConnection();
+        await conn.OpenAsync();
+
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT * FROM Stock";
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            var row = new Dictionary<string, object?>();
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+            }
+            items.Add(row);
+        }
+
+        return Ok(new ApiResponse<List<Dictionary<string, object?>>>(true, items));
     }
 }

@@ -1,11 +1,9 @@
-using System.Data.Odbc;
 using System.Text.Json;
-using x4_api_warehouse.Data;
-using x4_api_warehouse.Services;
+using x4_api_tsg_shipment.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://0.0.0.0:4002");
+builder.WebHost.UseUrls("http://0.0.0.0:4004");
 
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
     p.SetIsOriginAllowed(_ => true).AllowAnyHeader().AllowAnyMethod()));
@@ -13,12 +11,11 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
 builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower);
 
-builder.Services.AddSingleton<OdbcService>();
-builder.Services.AddSingleton<WarehouseDb>();
+builder.Services.AddSingleton<OracleService>();
 
 var app = builder.Build();
 
 app.UseCors();
-app.MapGet("/health", () => Results.Ok(new { status = "healthy", service = "x4-api-warehouse" }));
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", service = "x4-api-tsg-shipment" }));
 app.MapControllers();
 app.Run();

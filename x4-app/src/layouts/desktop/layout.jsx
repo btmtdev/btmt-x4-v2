@@ -22,7 +22,7 @@ export function useToolbar() { return useContext(ToolbarContext) }
 
 export function useLayout() {
   const ctx = useContext(LayoutContext)
-  if (!ctx) throw new Error("useLayout must be used within LayoutProvider")
+  if (!ctx) return { isMobile: false, isPanelOpen: true, panelToggle: () => {}, isMobileOpen: false, mobileToggle: () => {}, style: {} }
   return ctx
 }
 

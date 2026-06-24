@@ -8,37 +8,35 @@
 
 const ENVS = {
   production: {
-    API_URL: "http://10.30.92.66:4000",
-    SHIPPING_API_URL: "http://10.30.92.66:4001",
+    API_URL: import.meta.env.VITE_API_URL || "http://localhost:4000",
+    SHIPPING_API_URL: import.meta.env.VITE_SHIPPING_API_URL || "http://localhost:4001",
+    WAREHOUSE_API_URL: import.meta.env.VITE_WAREHOUSE_API_URL || "http://localhost:4002",
+    QUALITY_API_URL: import.meta.env.VITE_QUALITY_API_URL || "http://localhost:4003",
+    TSG_SHIPMENT_API_URL: import.meta.env.VITE_TSG_SHIPMENT_API_URL || "http://localhost:4004",
   },
   uat: {
-    API_URL: "http://10.30.93.66:4000",
-    SHIPPING_API_URL: "http://10.30.93.66:4001",
+    API_URL: import.meta.env.VITE_API_URL || "http://localhost:4000",
+    SHIPPING_API_URL: import.meta.env.VITE_SHIPPING_API_URL || "http://localhost:4001",
+    WAREHOUSE_API_URL: import.meta.env.VITE_WAREHOUSE_API_URL || "http://localhost:4002",
+    QUALITY_API_URL: import.meta.env.VITE_QUALITY_API_URL || "http://localhost:4003",
+    TSG_SHIPMENT_API_URL: import.meta.env.VITE_TSG_SHIPMENT_API_URL || "http://localhost:4004",
   },
   development: {
-    API_URL: "http://localhost:4000",
-    SHIPPING_API_URL: "http://localhost:4001",
+    API_URL: "/api/core",
+    SHIPPING_API_URL: "/api/shipping",
+    WAREHOUSE_API_URL: "/api/warehouse",
+    QUALITY_API_URL: "/api/quality",
+    TSG_SHIPMENT_API_URL: "/api/tsg-shipment",
   },
-}
-
-// Gateway routes (for internet access via YARP)
-const GATEWAY = "https://api.btmt.co.th"
-const GATEWAY_PATHS = {
-  production: { API: "/x4/core", SHIPPING: "/x4/shipping" },
-  uat: { API: "/x4-uat/core", SHIPPING: "/x4-uat/shipping" },
-}
-
-// Detect if user is on internet (not intranet)
-function isInternet() {
-  // Intranet: local IPs, localhost, or internal domain
-  const h = location.hostname
-  return !(h === "localhost" || h.startsWith("10.") || h.startsWith("192.168.") || h.startsWith("172."))
 }
 
 export const ENV_LIST = ["production", "uat", "development"]
 
 export function getEnvName() {
-  return localStorage.getItem("x4_env") || "production"
+  const stored = localStorage.getItem("x4_env")
+  if (stored) return stored
+  if (location.hostname === "localhost" || location.hostname === "127.0.0.1") return "development"
+  return "production"
 }
 
 export function setEnvName(env) {
@@ -47,15 +45,21 @@ export function setEnvName(env) {
 }
 
 export function getApiUrl() {
-  const env = getEnvName()
-  if (env === "development") return ENVS.development.API_URL
-  if (isInternet()) return GATEWAY + GATEWAY_PATHS[env].API
-  return ENVS[env].API_URL
+  return ENVS[getEnvName()].API_URL
 }
 
 export function getShippingApiUrl() {
-  const env = getEnvName()
-  if (env === "development") return ENVS.development.SHIPPING_API_URL
-  if (isInternet()) return GATEWAY + GATEWAY_PATHS[env].SHIPPING
-  return ENVS[env].SHIPPING_API_URL
+  return ENVS[getEnvName()].SHIPPING_API_URL
+}
+
+export function getQualityApiUrl() {
+  return ENVS[getEnvName()].QUALITY_API_URL
+}
+
+export function getWarehouseApiUrl() {
+  return ENVS[getEnvName()].WAREHOUSE_API_URL
+}
+
+export function getTsgShipmentApiUrl() {
+  return ENVS[getEnvName()].TSG_SHIPMENT_API_URL
 }
